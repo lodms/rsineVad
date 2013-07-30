@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<html>
+  <head>
+   <title>RSine Settings</title>
+  </head>
+  <body>
+    <v:page name="upd_enum" xmlns:v="http://www.openlinksw.com/vspx/">
+      <p>
+        <font style="color:red">
+          <v:error-summary/>
+        </font>
+      </p>
+      <table class="tableresult">
+	<?vsp 
+	declare _id integer;
+	declare _paramValue varchar;
+
+	_id := atoi(coalesce(get_keyword('id', params),'-1'));		
+	_paramValue := coalesce(get_keyword('paramValue',params),'');
+	if(_id <> -1 and _paramValue <> '')
+	{
+	  declare ret integer;
+	  declare uQuery varchar;
+	  uQuery := sprintf('UPDATE DB.DBA.RSINESETTINGS SET paramValue=\'%s\' WHERE id=%d',_paramValue, _id);
+	  ret := DB.DBA.rsine_exec(uQuery); 
+	  if(ret <> 0)
+	  {
+	    http('Error updating value');
+	  }
+	  _id := -1;
+	}
+	?>
+        <?vsp for select id, paramName, paramValue from DB.DBA.RSINESETTINGS do
+         {
+	   if(_id <> id)
+	   {
+           http (sprintf ('<tr><td>%s</td><td>%s</td><td><a href="?id=%d">edit</a></td><td></td></tr>', paramName, paramValue, id));
+	   } 
+	   else
+	   {
+           http (sprintf ('<form method="POST" action="/rsine/settings/"><tr><td>%s</td><td><input type="text" name="paramValue" value="%s"/></td><td><input type="hidden" value="%d" name="id"><input type="submit" value="Save"></td></tr></form>', paramName, paramValue, id));
+           }
+         }
+      ?>
+      </table>
+    </v:page>
+  </body>
+</html>
