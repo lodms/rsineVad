@@ -15,4 +15,7 @@ rsineVad
     1.7. From the main menu choose "System Admin". From the resulting submenu choose "Packages"
     1.8. "rsine" should already be in the list. Click "install".
 
-
+2. Administration
+    2.1. Settings
+         To view settings open up ${virtuosoServer}:${virtuosoPort}/rsine/settings in a browser.
+         You can change the host and port of the RSine server.      
