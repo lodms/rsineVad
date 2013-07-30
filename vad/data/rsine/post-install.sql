@@ -1,5 +1,5 @@
--- A simple exec method, returning 0 on success and 1 on error.
--- Inspired by WIKI_EXEC_NO_ERROR
+--A simple exec method, returning 0 on success and 1 on error.
+--Inspired by WIKI_EXEC_NO_ERROR
 create procedure DB.DBA.RSINE_EXEC (in text varchar)
 {
   log_enable(1);
@@ -12,7 +12,7 @@ create procedure DB.DBA.RSINE_EXEC (in text varchar)
   return 0;
 }
 ;
--- Procedure to create rsine's settings table and insert default values-
+--Procedure to create rsine's settings table and insert default values-
 create procedure DB.DBA.RSINE_CREATE_SETTINGS ()
 {
 declare ret int;
@@ -31,11 +31,11 @@ DB.DBA.RSINE_EXEC ( 'INSERT INTO DB.DBA.RSINESETTINGS VALUES (1, \'port\',\'8080
 }
 ;
 
--- Above procedure is called from here, so below triggers and procedures do not fail, because
--- of missing settings-table
+--Above procedure is called from here, so below triggers and procedures do not fail, because
+--of missing settings-table
 DB.DBA.RSINE_CREATE_SETTINGS();
 
--- Format http params for notification service
+--Format http params for notification service
 create procedure DB.DBA.TO_NOTIFICATION_FORMAT( in changeType varchar, in s any, in p any, in o any ) 
 {
 declare subject, predicate, object varchar;
@@ -78,11 +78,11 @@ declare subject, predicate, object varchar;
 }
 ;
 
--- Procedure to call notification service of given changeType.
--- @param changeType (according to notification service : oneof(add, remove, update).
--- @param s subject of rdf triple retrieved from trigger (below N.S)
--- @param p predicate of rdf triple retrieved from trigger (below N.P)
--- @param o object of rdf triple retrieved from trigger (below N.O)
+--Procedure to call notification service of given changeType.
+--@param changeType (according to notification service : oneof(add, remove, update).
+--@param s subject of rdf triple retrieved from trigger
+--@param p predicate of rdf triple retrieved from trigger
+--@param o object of rdf triple retrieved from trigger
 create procedure DB.DBA.RSINE_NOTIFY( in changeType varchar, in s any, in p any, in o any )
 {
  declare header any;
@@ -92,12 +92,12 @@ create procedure DB.DBA.RSINE_NOTIFY( in changeType varchar, in s any, in p any,
  declare port varchar;
  host := (select paramValue from DB.DBA.RSINESETTINGS where id = 0);
  port := (select paramValue from DB.DBA.RSINESETTINGS where id = 1);
- params := DB.DBA.TO_NOTIFICATION_FORMAT(changeType, N.S,N.P,N.O);
+ params := DB.DBA.TO_NOTIFICATION_FORMAT(changeType, s, p, o);
  response := http_get (sprintf('%s:%s',host,port), header, 'POST', 'Content-Type: text/plain', (params));
 }
 ;
 
--- trigger before insert calling above procedure.
+--trigger before insert calling above procedure.
 create trigger RSineAddTrigger before insert on DB.DBA.RDF_QUAD referencing new as N 
 {
  set triggers off;
@@ -105,6 +105,14 @@ create trigger RSineAddTrigger before insert on DB.DBA.RDF_QUAD referencing new 
 }
 ;
 
--- defining a url to display settings (as of now : host, port).
+--trigger after delete calling above procedure.
+create trigger RSineRemoveTrigger after delete on DB.DBA.RDF_QUAD referencing old as O
+{
+ set triggers off;
+ DB.DBA.RSINE_NOTIFY('remove', O.S, O.P, O.O);
+}
+;
+
+--defining a url to display settings (as of now : host, port).
 DB.DBA.VHOST_DEFINE(is_dav=>1, lpath=>'/rsine/settings/', ppath=>'/DAV/VAD/rsine/settings.vspx', vsp_user=>'dba', opts=>vector('executable','yes'));
 
