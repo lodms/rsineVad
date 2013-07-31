@@ -114,5 +114,6 @@ create trigger RSineRemoveTrigger after delete on DB.DBA.RDF_QUAD referencing ol
 ;
 
 --defining a url to display settings (as of now : host, port).
-DB.DBA.VHOST_DEFINE(is_dav=>1, lpath=>'/rsine/settings/', ppath=>'/DAV/VAD/rsine/settings.vspx', vsp_user=>'dba', opts=>vector('executable','yes'));
+DB.DBA.VHOST_DEFINE(is_dav=>1, lpath=>'/rsine/settings/', ppath=>'/DAV/VAD/rsine/settings.vspx', vsp_user=>'dba', auth_fn=>'DB.DBA.HP_AUTH_SQL_USER',
+ses_vars=>0, opts=>vector('executable','yes'));
 
