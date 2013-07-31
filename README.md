@@ -1,7 +1,7 @@
 rsineVad
 ========
 
-1. Build rsineVad from source\n
+1. Build rsineVad from source
     1.1. Clone rsineVad using : git clone https://github.com/lodms/rsineVad.git 
          (= ${rsineVadRoot} )
     1.2. Copy ${rsineVadRoot}/vad to ${virtuosoInstallationRoot} (ie. /usr/local/virtuoso-opensource).
