@@ -8,44 +8,39 @@
     <prop name="Copyright" value="(C) LOD2" />
     <prop name="Download" value="http://www.lod2.eu/downloads" />
   </name>
-  <version package="1.0.0">
-    <prop name="Release Date" value="2013-07-30 17:07"/>
+  <version package="1.0.0-rc1">
+    <prop name="Release Date" value="2013-07-29 15:40"/>
     <prop name="Build" value="Release, optimized"/>
   </version>
 </caption>
 <dependencies>
 </dependencies>
 <procedures uninstallation="supported">
-  <sql purpose="pre-install"><![CDATA[
-        dbg_printf('procedures - pre-install');
-  ]]></sql>
-  <sql purpose="post-install"><![CDATA[
-    dbg_printf('procedures - post-install');
-   ]]></sql>
+  <sql purpose="pre-install"></sql>
+  <sql purpose="post-install"></sql>
 </procedures>
 <ddls>
   <sql purpose="pre-install">
     <![CDATA[
         dbg_printf('ddls - pre-install');
+        if ((VAD_CHECK_VERSION ('rsine') is not null))
+        {
+        result ('ERROR', 'Please uninstall all previous versions of RSineVad before installing new version.');
+        signal ('FATAL', 'Please uninstall all previous versions of RSineVad before installing new version.');
+        } 
     ]]>
   </sql>
   <sql purpose="post-install">
     <![CDATA[
-		dbg_printf('ddls - post-install');
         DB.DBA.VAD_LOAD_SQL_FILE('/DAV/VAD/rsine/post-install.sql', 1, 'report', 1);
     ]]>
   </sql>
   <sql purpose='pre-uninstall'>
     <![CDATA[
-	    dbg_printf('ddls - pre-uninstall');
         DB.DBA.VAD_LOAD_SQL_FILE('/DAV/VAD/rsine/pre-uninstall.sql', 1, 'report', 1);
     ]]>
   </sql>
-  <sql purpose='post-uninstall'>
-    <![CDATA[
-        dbg_printf('ddls - post-uninstall');
-    ]]>
-  </sql>
+  <sql purpose='post-uninstall'></sql>
 </ddls>
 <resources>
   <file type="dav" source="data" target_uri="rsine/settings.vspx" dav_owner="dav" dav_grp="administrators" dav_perm="111101101NN" makepath="yes"/>
