@@ -12,9 +12,11 @@
       </p>
       <table class="tableresult">
 	<?vsp 
+    declare _command varchar;
 	declare _id integer;
 	declare _paramValue varchar;
 
+    _command := coalesce(get_keyword('command',params),'');
 	_id := atoi(coalesce(get_keyword('id', params),'-1'));		
 	_paramValue := coalesce(get_keyword('paramValue',params),'');
 	if(_id <> -1 and _paramValue <> '')
@@ -29,19 +31,71 @@
 	  }
 	  _id := -1;
 	}
+    
+    if(_command = 'includeGraph'){
+        declare _includeGraph varchar;
+        _includeGraph := coalesce(get_keyword('includeGraph',params),'');
+        if(_includeGraph <> ''){
+                    declare insertId int;                    
+                    declare iQuery varchar;
+                    insertId := coalesce ((select max(id) from DB.DBA.RSINESETTINGS), 5) + 1;
+                    iQuery := sprintf('INSERT INTO DB.DBA.RSINESETTINGS VALUES(%d,\'includeGraph\',\'%s\')', insertId, _includeGraph);
+                    declare iRet integer;
+                    iRet := DB.DBA.rsine_exec(iQuery);
+                    if(iRet <> 0){
+                        http('Error inserting includeGraph');
+                    }
+        }
+    }
+
+    if(_command = 'deleteIncludeGraph' and _id <> -1){
+        declare dQuery varchar;
+        declare dRet integer;
+        dQuery := sprintf('DELETE FROM DB.DBA.RSINESETTINGS WHERE id=%d',_id);    
+        dRet := DB.DBA.rsine_exec(dQuery);
+        if(dRet <> 0){
+            http('Error deleting includeGraph');
+        }
+    }
 	?>
         <?vsp for select id, paramName, paramValue from DB.DBA.RSINESETTINGS do
          {
 	   if(_id <> id)
 	   {
-           http (sprintf ('<tr><td>%s</td><td>%s</td><td><a href="?id=%d">edit</a></td><td></td></tr>', paramName, paramValue, id));
+           if(paramName = 'includeGraph')
+           {
+            http (sprintf ('<tr><td>%s</td><td>%s</td><td><form method="POST" action="/rsine/settings/"><input type="submit" value="edit"><input type="hidden" name="id" value="%d"></form></td><td><form method="POST" action="/rsine/settings/"><input type="submit" name="command" value="deleteIncludeGraph"><input type="hidden" name="id" value="%d"></form></td></tr>', paramName, paramValue, id, id));
+           }
+           else
+           { 
+            http (sprintf ('<tr><td>%s</td><td>%s</td><td><form method="POST" action="/rsine/settings/"><input type="submit" value="edit"><input type="hidden" name="id" value="%d"></form></td><td></td></tr>', paramName, paramValue, id));
+           }
 	   } 
 	   else
 	   {
-           http (sprintf ('<form method="POST" action="/rsine/settings/"><tr><td>%s</td><td><input type="text" name="paramValue" value="%s"/></td><td><input type="hidden" value="%d" name="id"><input type="submit" value="Save"></td></tr></form>', paramName, paramValue, id));
-           }
-         }
+           http (sprintf ('<form method="POST" action="/rsine/settings/"><tr><td>%s</td><td><input type="text" name="paramValue" value="%s"/></td><td><input type="hidden" value="%d" name="id"><input type="submit" name="command" value="Save"></td></tr></form>', paramName, paramValue, id));
+       }
+       }
       ?>
+
+      <?vsp
+        if(_command = 'addIncludeGraph'){
+            ?>
+            <form method="POST" action="/rsine/settings/">
+               <input type="text" name="includeGraph" value=""/>
+               <input type="submit" name="command" value="includeGraph"/>          
+            </form>
+            <?vsp 
+        } else {
+      ?>
+      <form method="POST" action="/rsine/settings/">
+        <tr>
+            <td>
+                <input type="submit" name="command" value="addIncludeGraph"/>          
+            </td>
+        </tr>
+      </form>
+      <?vsp } ?>
       </table>
     </v:page>
   </body>

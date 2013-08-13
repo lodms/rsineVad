@@ -83,8 +83,14 @@ declare subject, predicate, object varchar;
 --@param s subject of rdf triple retrieved from trigger
 --@param p predicate of rdf triple retrieved from trigger
 --@param o object of rdf triple retrieved from trigger
-create procedure DB.DBA.RSINE_NOTIFY( in changeType varchar, in s any, in p any, in o any )
+create procedure DB.DBA.RSINE_NOTIFY( in changeType varchar, in s any, in p any, in o any, in g any )
 {
+ declare graph varchar;
+ declare countGraph int;
+ graph := id_to_iri(g);
+ countGraph := (SELECT COUNT(id) FROM DB.DBA.RSINESETTINGS WHERE paramName = 'includeGraph' AND paramValue = graph);
+ if(countGraph>0)
+ {
  declare header any;
  declare params varchar;
  declare response varchar;
@@ -94,6 +100,7 @@ create procedure DB.DBA.RSINE_NOTIFY( in changeType varchar, in s any, in p any,
  port := (select paramValue from DB.DBA.RSINESETTINGS where id = 1);
  params := DB.DBA.TO_NOTIFICATION_FORMAT(changeType, s, p, o);
  response := http_get (sprintf('%s:%s',host,port), header, 'POST', 'Content-Type: text/plain', (params));
+ }
 }
 ;
 
@@ -101,7 +108,7 @@ create procedure DB.DBA.RSINE_NOTIFY( in changeType varchar, in s any, in p any,
 create trigger RSineAddTrigger before insert on DB.DBA.RDF_QUAD referencing new as N 
 {
  set triggers off;
- DB.DBA.RSINE_NOTIFY('add', N.S, N.P, N.O);
+ DB.DBA.RSINE_NOTIFY('add', N.S, N.P, N.O, N.G);
 }
 ;
 
@@ -109,7 +116,7 @@ create trigger RSineAddTrigger before insert on DB.DBA.RDF_QUAD referencing new 
 create trigger RSineRemoveTrigger after delete on DB.DBA.RDF_QUAD referencing old as O
 {
  set triggers off;
- DB.DBA.RSINE_NOTIFY('remove', O.S, O.P, O.O);
+ DB.DBA.RSINE_NOTIFY('remove', O.S, O.P, O.O, O.G);
 }
 ;
 
