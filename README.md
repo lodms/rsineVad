@@ -5,6 +5,7 @@ rsineVad
     1.1. Clone rsineVad using : git clone https://github.com/lodms/rsineVad.git 
          (= ${rsineVadRoot} )
     1.2. Copy ${rsineVadRoot}/vad to ${virtuosoInstallationRoot} (ie. /usr/local/virtuoso-opensource).
+	 Copy ${rsineVadRoot}/wp5rsine.xml to ${virtuosoInstallationRoot} (ie. /usr/local/virtuoso-opensource).
          This is necessary because the following virtuoso procedure currently ignores the resource_base_uri parameter.
     1.3. Start isql (cd into ${virtuosoInstallationRoot} and enter ./bin/isql and hiter enter)
     1.4. Paste the following command to the isql prompt replacing the path variables:
